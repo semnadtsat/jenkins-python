@@ -49,7 +49,7 @@ jobs:
         run: docker push ${{ vars.DOCKER_REGISTRY }}/fla:alpine-3.21
 
       - name: Deploy
-        run: ssh ${{ secret.SSH_USER_DEVMANAGER }}@${{ secret.SSH_HOST_DEVMANAGER }} /bin/bash << EOF
+        run: ssh ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} /bin/bash << EOF
             echo ${{ vars.TEST_VAR }}
             docker ps
             EOF
