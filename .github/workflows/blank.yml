@@ -1,5 +1,4 @@
 # This is a basic workflow to help you get started with Actions
-
 name: Python Run
 
 # Controls when the workflow will run
@@ -24,6 +23,9 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v4
 
+      - name: ENVs
+        run: echo "DOCKER_REGISTRY=${{ vars.DOCKER_REGISTRY }}" > .env
+
       # Runs a set of commands using the runners shell
       - name: Run a multi-line script
         run: |
@@ -42,16 +44,14 @@ jobs:
           username: ${{ secrets.DOCKER_REGISTRY_USER }}
           password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
 
-      # - name: Build image
-      #   run: docker build -t ${{ vars.DOCKER_REGISTRY }}/fla:alpine-3.21 .
+      - name: Build image
+        run: docker build -t ${{ vars.DOCKER_REGISTRY }}/fla:alpine-3.21 .
       
-      # - name: Push
-      #   run: docker push ${{ vars.DOCKER_REGISTRY }}/fla:alpine-3.21
+      - name: Push
+        run: docker push ${{ vars.DOCKER_REGISTRY }}/fla:alpine-3.21
 
-      # - name: SSH test
-      #   run: ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} /bin/bash << EOF
-      #       echo ${{ vars.TEST_VAR }}
-      #       docker ps
-      #       EOF
       - name: SSH test
         run: ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} "docker ps && echo ${{ vars.TEST_VAR }}"
+
+      - name: SSH test
+        run: ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} "docker run -dit --name python-flask -p 4090:4090 ${{ vars.DOCKER_REGISTRY }}/fla:alpine-3.21"
