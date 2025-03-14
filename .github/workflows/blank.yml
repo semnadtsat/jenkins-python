@@ -53,5 +53,8 @@ jobs:
       - name: SSH test
         run: ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} "docker ps && echo ${{ vars.TEST_VAR }}"
 
-      - name: SSH test
+      - name: Docker Login
+        run: ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} "echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login ${{ vars.DOCKER_REGISTRY }} -u ${{ secrets.DOCKER_REGISTRY_USER }} --password-stdin"
+
+      - name: Container Deploy
         run: ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} "docker run -dit --name python-flask -p 4090:4090 ${{ vars.DOCKER_REGISTRY }}/fla:alpine-3.21"
