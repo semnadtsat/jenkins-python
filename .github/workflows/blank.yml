@@ -31,7 +31,10 @@ jobs:
         run: |
           pwd
           ls -la
-      
+
+      - name: Get Commit Hash
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+
       # Runs a single command using the runners shell
       - name: Run python
         run: python3 helloworld.py
@@ -45,13 +48,18 @@ jobs:
           password: ${{ secrets.DOCKER_REGISTRY_PASSWORD }}
 
       - name: Build image
-        run: docker build -t ${{ vars.DOCKER_REGISTRY }}/fla:latest .
+        run: docker build -t ${{ vars.DOCKER_REGISTRY }}/fla:${COMMIT_HASH} .
       
       - name: Push
-        run: docker push ${{ vars.DOCKER_REGISTRY }}/fla:latest
+        run: docker push ${{ vars.DOCKER_REGISTRY }}/fla:${COMMIT_HASH}
 
       - name: SSH test
-        run: ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} "docker ps && echo ${{ vars.TEST_VAR }}"
+        run: |
+          ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} << 'EOF'
+          docker ps && echo ${{ vars.TEST_VAR }}
+          export COMMIT_HASH=${{ env.COMMIT_HASH }}
+          echo "OK"
+          EOF
 
       - name: Docker Login
         run: ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} "echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login ${{ vars.DOCKER_REGISTRY }} -u ${{ secrets.DOCKER_REGISTRY_USER }} --password-stdin"
