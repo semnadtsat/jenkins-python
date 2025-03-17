@@ -33,7 +33,7 @@ jobs:
           ls -la
 
       - name: Get Commit Hash
-        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
+        run: echo "COMMIT_HASH=skate" >> $GITHUB_ENV
 
       # Runs a single command using the runners shell
       - name: Run python
