@@ -34,7 +34,7 @@ jobs:
           git rev-parse --short HEAD
 
       - name: Get Commit Hash
-        run: echo "COMMIT_HASH=skate" >> $GITHUB_ENV
+        run: echo "COMMIT_HASH=$(git rev-parse --short HEAD)" >> $GITHUB_ENV
 
       # Runs a single command using the runners shell
       - name: Run python
@@ -63,7 +63,15 @@ jobs:
           EOF
 
       - name: Docker Login
-        run: ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} "echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login ${{ vars.DOCKER_REGISTRY }} -u ${{ secrets.DOCKER_REGISTRY_USER }} --password-stdin"
+        run: |
+          ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} << 'EOF'
+          echo "${{ secrets.DOCKER_REGISTRY_PASSWORD }}" | docker login ${{ vars.DOCKER_REGISTRY }} -u ${{ secrets.DOCKER_REGISTRY_USER }} --password-stdin
+          EOF
 
       - name: Container Deploy
-        run: ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} "docker stop python-flask ; docker rm python-flask ; docker pull ${{ vars.DOCKER_REGISTRY }}/fla:latest ; docker run -dit --name python-flask -p 4090:4090 ${{ vars.DOCKER_REGISTRY }}/fla:latest"
+        run: |
+          ssh -p ${{ secrets.SSH_PORT_DEVMANAGER }} ${{ secrets.SSH_USER_DEVMANAGER }}@${{ secrets.SSH_HOST_DEVMANAGER }} << 'EOF'
+          docker stop python-flask
+          docker rm python-flask
+          docker pull ${{ vars.DOCKER_REGISTRY }}/fla:${{ env.COMMIT_HASH }}
+          docker run -dit --name python-flask -p 4090:4090 ${{ vars.DOCKER_REGISTRY }}/fla:${{ env.COMMIT_HASH }}
