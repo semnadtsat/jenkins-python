@@ -75,3 +75,4 @@ jobs:
           docker rm python-flask
           docker pull ${{ vars.DOCKER_REGISTRY }}/fla:${{ env.COMMIT_HASH }}
           docker run -dit --name python-flask -p 4090:4090 ${{ vars.DOCKER_REGISTRY }}/fla:${{ env.COMMIT_HASH }}
+          EOF
